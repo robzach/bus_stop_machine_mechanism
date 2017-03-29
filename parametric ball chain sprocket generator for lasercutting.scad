@@ -1,6 +1,11 @@
 // Parametric ball chain sprocket generator for lasercutting
+//
+// native units intended as millimeters
+//
+// October 20, 2016 (original)
+// March 29, 2017 (added D-cut option; switched to boolean options; refactored slightly)
+//
 // by Robert Zacharias, rz@rzach.me
-// October 20, 2016
 // released to the public domain by the author
 
 // special variables to increase resolution
@@ -14,20 +19,26 @@ ballDiameter = 4.76;
 linkLength = 1.8;
 
 // number of teeth the sprocket will accomodate
-numTeeth = 40;
+numTeeth = 20;
 
 // size of hole in center of all pieces
-centerHoleRadius = 5;
+centerHoleDiameter = 5;
+
+// make a D-cut in the center hole? (for fitting on a shaft with a flat)
+dCut = true; // [true, false]
+// if yes, what's the perpendicular distance from the opposite side of the circle to the flat being cut out of it
+dDist = 4;
 
 // amount guard plates overhang the gear plate
 guardPlateOverhangRadius = 7; 
 
-showGuards = "yes"; //[yes,no]
+showGuards = true; //[true, false]
 
 // preview[view:north, tilt:top]
 
 circumference = (ballDiameter + linkLength) * numTeeth;
 circleRadius = circumference / (2 * PI);
+centerHoleRadius = centerHoleDiameter / 2;
 
 echo("circleRadius", circleRadius);
 echo("overhang plate radius", guardPlateOverhangRadius + circleRadius);
@@ -43,21 +54,33 @@ difference(){
         translate([xTranslate, yTranslate, 0]) circle(d = ballDiameter);
     }
     
-    circle(centerHoleRadius);
+    cutCenterHole();
+    
 }
-//
-// top and bottom guards to keep chain aligned on sprocket
 
-if (showGuards == "yes"){
+// top and bottom guards to keep chain aligned on sprocket
+if (showGuards){
     translate([(circleRadius + guardPlateOverhangRadius/2) * 2 + 1, 0, 0]) 
     difference(){
         circle(circleRadius + guardPlateOverhangRadius);
-        circle(centerHoleRadius);
+        cutCenterHole();
     }
     
     translate([(circleRadius + (guardPlateOverhangRadius + circleRadius) * 3) + 2, 0, 0]) 
     difference(){
         circle(circleRadius + guardPlateOverhangRadius);
-        circle(centerHoleRadius);
+        cutCenterHole();
     }
+}
+
+module cutCenterHole(){
+    if (dCut){
+        intersection(){
+            circle(centerHoleRadius);
+            translate([-centerHoleRadius, -centerHoleRadius, 0]){
+                square([dDist, centerHoleDiameter]);
+            }
+        }
+    }
+    else circle(centerHoleRadius);
 }
