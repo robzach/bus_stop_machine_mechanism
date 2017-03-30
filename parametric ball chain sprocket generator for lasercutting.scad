@@ -22,12 +22,12 @@ linkLength = 1.8;
 numTeeth = 20;
 
 // size of hole in center of all pieces
-centerHoleDiameter = 5;
+centerHoleDiameter = 5; // NEMA 17 stepper motors use this size
 
 // make a D-cut in the center hole? (for fitting on a shaft with a flat)
 dCut = true; // [true, false]
 // if yes, what's the perpendicular distance from the opposite side of the circle to the flat being cut out of it
-dDist = 4;
+dDist = 4.48; // this worked for a NEMA 17 stepper motor shaft with a flat
 
 // amount guard plates overhang the gear plate
 guardPlateOverhangRadius = 7; 
