@@ -8,6 +8,9 @@ native units are mm
     - replaced complicated curved cutouts with triangular sections
     - added cutouts for brass bearings, McMaster part 2938T19
     - does not yet allow for actual mounting hardware, so that needs work
+4/4/17
+    - changed output size to 5/8" which is the acrylic pipe ID
+    - added option for DXF output, for printing on paper and manual milling
 
 Robert Zacharias, rz@rzach.me
 released to the public domain by the author
@@ -17,8 +20,28 @@ x = 100;
 y = 80;
 z = 50;
 holeDia = tomm(7/8);
-mouthWidth = tomm(1/2);
+mouthWidth = tomm(5/8);
+gearAllowanceDia = tomm(2);
 
+DXF = true;
+
+if(DXF){
+     difference(){
+            square([x, y]);
+            translate([60,40]) circle(holeDia/2, center=true);
+            translate([60,40]) circle(gearAllowanceDia/2);
+            translate([0,40]) polygon(points=[[0,-mouthWidth/2],[60,-gearAllowanceDia/2],[60,gearAllowanceDia/2],[0,mouthWidth/2]]);
+     }
+     
+     translate([60,40]){
+         difference(){
+            circle(tomm(1.25)/2);
+            circle(tomm(7/8)/2);
+         }
+     }
+}
+
+else{
 difference(){
     // box
     linear_extrude(z){
@@ -29,10 +52,10 @@ difference(){
     } 
 
     // surface cylinder cut
-    translate([60,40,z-10]) linear_extrude(15) circle(45/2);
+    translate([60,40,z-10]) linear_extrude(15) circle(gearAllowanceDia/2);
     
     // surface triangular cut
-    translate([0,40,z-10]) linear_extrude(15) polygon(points=[[0,-mouthWidth/2],[60,-45/2],[60,45/2],[0,mouthWidth/2]]);
+    translate([0,40,z-10]) linear_extrude(15) polygon(points=[[0,-mouthWidth/2],[60,-gearAllowanceDia/2],[60,gearAllowanceDia/2],[0,mouthWidth/2]]);
 
     // bearing on bottom side
     translate([60,40]) bearing();
@@ -40,6 +63,7 @@ difference(){
     // bearing on top side
     translate([60,40,z-10]) rotate([180,0,0]) bearing();
 
+}
 }
 
 module bearing(){ // McMaster part 2938T19
