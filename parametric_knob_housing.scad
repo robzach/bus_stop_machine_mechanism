@@ -16,7 +16,7 @@ released to the public domain by the author
 x = 100;
 y = 80;
 z = 50;
-holeDia = tomm(3/4);
+holeDia = tomm(7/8);
 mouthWidth = tomm(1/2);
 
 difference(){
@@ -42,7 +42,7 @@ difference(){
 
 }
 
-module bearing(){
+module bearing(){ // McMaster part 2938T19
     union(){
         linear_extrude(tomm(1/2)) circle(tomm(7/8)/2);
         linear_extrude(tomm(1/8)) circle(tomm(1.25)/2);
