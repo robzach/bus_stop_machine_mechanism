@@ -11,59 +11,75 @@ native units are mm
 4/4/17
     - changed output size to 5/8" which is the acrylic pipe ID
     - added option for DXF output, for printing on paper and manual milling
+    - added more variables and calculated variables so nearly every dimension is parametric from the top input values (exception: bearing)
+    - added center marker thing (can't make lines so it has to be a polygon)
 
 Robert Zacharias, rz@rzach.me
 released to the public domain by the author
 */
 
-x = 100;
-y = 80;
+x = 150;
+y = 100;
 z = 50;
 holeDia = tomm(7/8);
 mouthWidth = tomm(5/8);
-gearAllowanceDia = tomm(2);
+guardAllowanceDia = 55; // for guard that rides along next to chain
+gearAllowanceDia = 40; // actual width of the gear driving the chain
+knobOffsetFromCenter = 20; // along x
+cutDepth = 10; // along z
+
+
+axisPos = [(x/2)+knobOffsetFromCenter, y/2];
+axisPos3d = [(x/2)+knobOffsetFromCenter, y/2, z-10];
 
 DXF = true;
 
 if(DXF){
+    
+    // main body
      difference(){
             square([x, y]);
-            translate([60,40]) circle(holeDia/2, center=true);
-            translate([60,40]) circle(gearAllowanceDia/2);
-            translate([0,40]) polygon(points=[[0,-mouthWidth/2],[60,-gearAllowanceDia/2],[60,gearAllowanceDia/2],[0,mouthWidth/2]]);
+            translate(axisPos) circle(holeDia/2, center=true);
+            translate(axisPos) circle(guardAllowanceDia/2);
+            translate([0,y/2]) polygon(points=[[0,-mouthWidth/2],[knobOffsetFromCenter+(x/2),-gearAllowanceDia/2],[knobOffsetFromCenter+(x/2),gearAllowanceDia/2],[0,mouthWidth/2]]);
      }
      
-     translate([60,40]){
+     // bushing
+     translate(axisPos){
          difference(){
             circle(tomm(1.25)/2);
             circle(tomm(7/8)/2);
          }
      }
+     
+     // center mark
+     translate(axisPos){
+         polygon(points=[[5,5],[-5,5],[-5,-5],[5,-5],[0,0],[5,5]]);
+     }
 }
 
 else{
-difference(){
-    // box
-    linear_extrude(z){
-        difference(){
-            square([x, y]);
-            translate([60,40]) circle(holeDia/2, center=true);
+    difference(){
+        // box
+        linear_extrude(z){
+            difference(){
+                square([x, y]);
+                translate(axisPos) circle(holeDia/2, center=true);
+            }
         }
-    } 
-
-    // surface cylinder cut
-    translate([60,40,z-10]) linear_extrude(15) circle(gearAllowanceDia/2);
     
-    // surface triangular cut
-    translate([0,40,z-10]) linear_extrude(15) polygon(points=[[0,-mouthWidth/2],[60,-gearAllowanceDia/2],[60,gearAllowanceDia/2],[0,mouthWidth/2]]);
-
-    // bearing on bottom side
-    translate([60,40]) bearing();
+        // surface cylinder cut
+        translate(axisPos3d) linear_extrude(cutDepth+1) circle(guardAllowanceDia/2);
+        
+        // surface triangular cut
+        translate([0,y/2,z-cutDepth]) linear_extrude(cutDepth+1) polygon(points=[[0,-mouthWidth/2],[(x/2)+knobOffsetFromCenter,-gearAllowanceDia/2],[(x/2)+knobOffsetFromCenter,gearAllowanceDia/2],[0,mouthWidth/2]]);
     
-    // bearing on top side
-    translate([60,40,z-10]) rotate([180,0,0]) bearing();
-
-}
+        // bearing on bottom side
+        translate(axisPos) bearing();
+        
+        // bearing on top side
+        translate(axisPos3d) rotate([180,0,0]) bearing();
+    }
 }
 
 module bearing(){ // McMaster part 2938T19
@@ -73,9 +89,8 @@ module bearing(){ // McMaster part 2938T19
     }
 }
 
+function tomm (in) = in * 25.4;
+
 // special variables to increase rendering resolution
 $fa = 1;
 $fs = 1;
-
-function toin (mm) = mm / 25.4;
-function tomm (in) = in * 25.4;
