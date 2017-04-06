@@ -4,6 +4,9 @@
 //
 // October 20, 2016 (original)
 // March 29, 2017 (added D-cut option; switched to boolean options; refactored slightly)
+// April 5, 2017
+//  - added tomm() function
+//  - changed linkLength to 1.2 by default, which matches previous cuts for the bus stop project
 //
 // by Robert Zacharias, rz@rzach.me
 // released to the public domain by the author
@@ -16,16 +19,16 @@ $fs = 1;
 ballDiameter = 4.76; 
 
 // length of link between neighboring balls; note that this value will be different when the chain is straight versus going around a curve so some experimentation may be in order. Approximately 1.8mm for #10 chain in a straight run.
-linkLength = 1.8;
+linkLength = 1.2;
 
 // number of teeth the sprocket will accomodate
 numTeeth = 20;
 
 // size of hole in center of all pieces
-centerHoleDiameter = 5; // NEMA 17 stepper motors use this size
+centerHoleDiameter = tomm(3/4);
 
 // make a D-cut in the center hole? (for fitting on a shaft with a flat)
-dCut = true; // [true, false]
+dCut = false; // [true, false]
 // if yes, what's the perpendicular distance from the opposite side of the circle to the flat being cut out of it
 dDist = 4.48; // this worked for a NEMA 17 stepper motor shaft with a flat
 
@@ -84,3 +87,5 @@ module cutCenterHole(){
     }
     else circle(centerHoleRadius);
 }
+
+function tomm(in) = in * 25.4;
