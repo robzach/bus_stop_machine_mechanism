@@ -13,6 +13,8 @@ native units are mm
     - added option for DXF output, for printing on paper and manual milling
     - added more variables and calculated variables so nearly every dimension is parametric from the top input values (exception: bearing)
     - added center marker thing (can't make lines so it has to be a polygon)
+4/17/17
+    - using projection() to make crossection of final design for use as shop drawings (flip this on or off with by commenting/uncommenting)
 
 Robert Zacharias, rz@rzach.me
 released to the public domain by the author
@@ -32,7 +34,7 @@ cutDepth = 10; // along z
 axisPos = [(x/2)+knobOffsetFromCenter, y/2];
 axisPos3d = [(x/2)+knobOffsetFromCenter, y/2, z-10];
 
-DXF = true;
+DXF = false;
 
 if(DXF){
     
@@ -59,28 +61,35 @@ if(DXF){
 }
 
 else{
-    difference(){
-        // box
-        linear_extrude(z){
-            difference(){
-                square([x, y]);
-                translate(axisPos) circle(holeDia/2, center=true);
+    
+    // comment following line, and its matching curly bracket, to turn off crossection slicing
+    projection(cut=true) translate([0,0,-y/2]) rotate([90,0,0]) {
+    
+        difference(){
+            // box
+            linear_extrude(z){
+                difference(){
+                    square([x, y]);
+                    translate(axisPos) circle(holeDia/2, center=true);
+                }
             }
+        
+            // surface cylinder cut
+            translate(axisPos3d) linear_extrude(cutDepth+1) circle(guardAllowanceDia/2);
+            
+            // surface triangular cut
+            translate([0,y/2,z-cutDepth]) linear_extrude(cutDepth+1) polygon(points=[[0,-mouthWidth/2],[(x/2)+knobOffsetFromCenter,-gearAllowanceDia/2],[(x/2)+knobOffsetFromCenter,gearAllowanceDia/2],[0,mouthWidth/2]]);
+        
+            // bearing on bottom side
+            translate(axisPos) bearing();
+            
+            // bearing on top side
+            translate(axisPos3d) rotate([180,0,0]) bearing();
         }
-    
-        // surface cylinder cut
-        translate(axisPos3d) linear_extrude(cutDepth+1) circle(guardAllowanceDia/2);
-        
-        // surface triangular cut
-        translate([0,y/2,z-cutDepth]) linear_extrude(cutDepth+1) polygon(points=[[0,-mouthWidth/2],[(x/2)+knobOffsetFromCenter,-gearAllowanceDia/2],[(x/2)+knobOffsetFromCenter,gearAllowanceDia/2],[0,mouthWidth/2]]);
-    
-        // bearing on bottom side
-        translate(axisPos) bearing();
-        
-        // bearing on top side
-        translate(axisPos3d) rotate([180,0,0]) bearing();
     }
 }
+
+
 
 module bearing(){ // McMaster part 2938T19
     union(){
